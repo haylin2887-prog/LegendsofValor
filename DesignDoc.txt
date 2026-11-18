@@ -1,0 +1,39 @@
+# Legends of Valor — OO Design Document
+
+Feifei Qin, Ivan Li
+
+---
+
+### World/
+
+1. Abstract Tile Class
+    Nexus - N
+        The row at the very top and bottom of the grid
+    Inaccessible - I 
+        Heroes & Monsters cannot enter this tile
+    Obstacle - O
+        Heroes can use a turn to remove this Obsatcle, turning it into a Plain tile
+    Plain - P
+        Normal Tiles
+    Bush - B 
+        Heroes on a bush tile have increased Dexerity, removed whem leaving Tile. On hard difficulty -> monsters can also gain a stat boost
+    Cave - C 
+        Heroes on a cave tile have increased Agility, removed when leaving Tile. On hard difficulty -> monsters have increased dodge chance
+    Koulou - K 
+        Heroes on a Koulou tile have increased Strength, removed when leaving Tile, On hard difficulty -> monsters have increased attack damage
+
+2. Grid
+    8 x 8 grid of Tiles
+
+    0   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
+    1   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
+    2   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]   
+    3   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
+    4   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
+    5   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
+    6   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
+    7   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
+          Top         Mid         Bot
+          
+    - Rows 0 and 7 are nexus tiles
+    - Columns 2 and 5 are Inaccessible
