@@ -1,5 +1,8 @@
 package valor.world;
 
-public class BushTile {
-    
+// increases the dexterity of a hero standing on it
+public class BushTile extends Tile {
+    public BushTile(int row, int col) {
+        super(row, col, 'B', true);
+    }
 }

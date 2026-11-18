@@ -9,7 +9,7 @@ Feifei Qin, Ivan Li
 1. Abstract Tile Class
     Nexus - N
         The row at the very top and bottom of the grid
-    Inaccessible - I 
+    Inaccessible - X 
         Heroes & Monsters cannot enter this tile
     Obstacle - O
         Heroes can use a turn to remove this Obsatcle, turning it into a Plain tile
@@ -34,6 +34,6 @@ Feifei Qin, Ivan Li
     6   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
     7   [ ] [ ] [X] [ ] [ ] [X] [ ] [ ]
           Top         Mid         Bot
-          
+
     - Rows 0 and 7 are nexus tiles
     - Columns 2 and 5 are Inaccessible
