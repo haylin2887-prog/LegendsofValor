@@ -7,12 +7,16 @@ Feifei Qin, Ivan Li
 ### World/
 
 1. Abstract Tile Class
+    (int row, int col, char symbol, boolean accessible)
     Nexus - N
         The row at the very top and bottom of the grid
+        - has emum Owner {HEROES, MONSTERS} to separate row 0 and row 7
     Inaccessible - X 
         Heroes & Monsters cannot enter this tile
+        - accessible get to false in constructor
     Obstacle - O
         Heroes can use a turn to remove this Obsatcle, turning it into a Plain tile
+        - Overrides isRemovable to return true in Tile class
     Plain - P
         Normal Tiles
     Bush - B 
@@ -37,3 +41,24 @@ Feifei Qin, Ivan Li
 
     - Rows 0 and 7 are nexus tiles
     - Columns 2 and 5 are Inaccessible
+
+3. Position.java
+    position refers to the location of a tile on the grid that a hero occupies, a moving hero creates a new position object
+    - row, col
+    moved(Direction)
+
+4. World Generation
+    - takes a random number as seed for shuffling grid positions around
+    - sets Tile[][] = new Tile[WORLD_SIZE][WORLD_SIZE]
+    - List<Position> laneSpots = new ArrayList<>();
+    1. iterates through the rows & columns
+    2. if col is not a value in Lanes {0,1} {3,4} {6,7}, then make new inaccessible tile
+    3. if row is 0 or 7, make nexus tiles. 0 -> monsters own, 7 -> heroes own.
+    4. else: add tile position to laneSpots array
+    5. then shuffle the laneSpots array on random seed for random permutation of tiles
+    6. calculates 4 bushes, 4 caves, 4 koulou, 4 obstacles, 20 plain tiles
+    7. iterate through laneSpots, assigning tiles.
+    8. verify that it is possible for a hero standing on it's nexus row to travel up
+       and reach a monster's nexus. Ignores obstacles since a hero can remove an obstacle with a turn.
+    9. output a valid world generation.
+
