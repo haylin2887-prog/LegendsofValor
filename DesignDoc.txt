@@ -62,3 +62,8 @@ Feifei Qin, Ivan Li
        and reach a monster's nexus. Ignores obstacles since a hero can remove an obstacle with a turn.
     9. output a valid world generation.
 
+
+5. UI
+    - SetupMenu: welcomes the user and asks the user to select 3 heroes to form a team.
+    - WorldView: renders the 8x8 grid along with the lane labels
+    
