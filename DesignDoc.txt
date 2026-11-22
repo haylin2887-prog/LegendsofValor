@@ -64,11 +64,60 @@ Feifei Qin, Ivan Li
 
 
 5. UI
-    - SetupMenu: welcomes the user and asks the user to select 3 heroes to form a team.
+    - SetupMenu: welcomes the user and asks the user to select 3 heroes (loaded by GameData) to form a Party.
+        each hero is listed with its statusLine, and a hero can only be picked once
     - WorldView: renders the 8x8 grid along with the lane labels
     - MarketMenu: shop for one hero standing on the heroes' Nexus
         0) Leave  1) Buy  2) Sell  3) Repair  4) View inventory
         every item list has a "0) Back" option
+
+### Characters/
+
+1. Abstract Entity Class
+    (String name, int level) -> hp = level * Rules.HP_PER_LEVEL
+    - parent of Hero and Monster: name, level, hp, board label, row/col position
+    - takeDamage(), isFainted()
+    - abstract dodgeChance(): heroes and monsters calculate it differently
+    - tryDodge(): rolls dodgeChance(), capped at Rules.MAX_DODGE (50%)
+
+2. Abstract Hero Class extends Entity
+    (name, mp, strength, agility, dexterity, gold, xp, favorsStrength, favorsDexterity, favorsAgility)
+    - every hero starts at level 1
+    - favored skills start 10% higher (Rules.FAVORED_START_BONUS)
+    - inventory: ArrayList<Item>, plus the equipped weapon / armor (null if none)
+    - gold: canAfford(), spend(), earn()
+    - removeItem(): returns false if the hero doesn't have it, unequips the item if it was equipped
+    - dodgeChance() = agility * Rules.HERO_DODGE_FACTOR
+    - statusLine(inBattle): one line of text for menus
+    Hero types are nested static classes inside Hero.java, each favors two skills:
+        Hero.Warrior  - strength, agility
+        Hero.Sorcerer - dexterity, agility
+        Hero.Paladin  - strength, dexterity
+
+3. Abstract Monster Class extends Entity
+    (name, level, baseDamage, defense, dodge)
+    - attackDamage() = baseDamage * Rules.MONSTER_DAMAGE_FACTOR
+    - dodgeChance() = dodge * Rules.MONSTER_DODGE_FACTOR
+    - afterDefense(damage): damage left after the monster's defense
+    - reduceDamage / reduceDefense / reduceDodge(percent): used by spell effects
+    - statusLine(): one line of text for menus
+    Monster types are nested static classes inside Monster.java, each is 10% stronger
+    in one stat (Rules.MONSTER_FAVORED_BONUS):
+        Monster.Dragon      - base damage
+        Monster.Exoskeleton - defense
+        Monster.Spirit      - dodge
+
+4. Party
+    the player's team of 3 heroes (one per lane)
+    - addHero(), getHeroes(), size()
+    - highestLevel(): used to pick the level of spawned monsters
+
+5. GameData
+    reads every Data/*.txt file once and keeps the objects in lists:
+    - List<Hero> heroes = new ArrayList<>()      Warriors, Sorcerers, Paladins
+    - List<Monster> monsters = new ArrayList<>() Dragons, Exoskeletons, Spirits
+    - ItemCatalog items                          weapons, armor, potions, spells
+    - the lists are returned unmodifiable, so the game can't change the loaded data by accident
 
 ### Item/
 
@@ -91,7 +140,12 @@ Feifei Qin, Ivan Li
 ### Data/
 
     - DataFileReader: reads a Data/*.txt file into rows, skipping the header line
-    - RecordParser<T>: one parser per item file (WeaponParser, ArmorParser, PotionParser, SpellParser)
+    - DataFileReader.load(file, parser, list): parses every row of a file into the list
+    - RecordParser<T>: turns one row into an object. one parser per kind of file:
+        HeroParser, MonsterParser, WeaponParser, ArmorParser, PotionParser, SpellParser
+    - HeroFactory / MonsterFactory: decide which subclass a row becomes.
+        GameData passes a constructor reference, e.g. new HeroParser(Hero.Warrior::new)
+        so Warriors.txt, Sorcerers.txt and Paladins.txt share one parser
     - ItemCatalog: loads Weaponry, Armory, Potions, Fire/Ice/LightningSpells
 
 ### Market/
