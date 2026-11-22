@@ -2,6 +2,8 @@ package valor.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import valor.Characters.Hero;
+import valor.Characters.Party;
 
 // set up menu greets the user, displays the game being played
 // how to win, and asks them to choose 3 heroes.
@@ -32,18 +34,17 @@ public class SetupMenu {
         System.out.println(WELCOME);
     }
 
-    // TODO: change String to Hero once heroes are added
-    public List<String> chooseHeroes(List<String> allHeroes) {
-        List<String> available = new ArrayList<>(allHeroes);
-        List<String> chosen = new ArrayList<>();
-        while (chosen.size() < TEAM_SIZE) {
-            String hero = console.choose(
-                    "\nChoose hero " + (chosen.size() + 1) + " of " + TEAM_SIZE + ":",
-                    available, name -> name);
+    public Party chooseHeroes(List<Hero> allHeroes) {
+        List<Hero> available = new ArrayList<>(allHeroes);
+        Party party = new Party();
+        while (party.size() < TEAM_SIZE) {
+            Hero hero = console.choose(
+                    "\nChoose hero " + (party.size() + 1) + " of " + TEAM_SIZE + ":",
+                    available, Hero::toString);
             available.remove(hero); // a hero can only be picked once
-            chosen.add(hero);
-            System.out.println(hero + " joins your team!");
+            party.addHero(hero);
+            System.out.println(hero.getName() + " joins your team!");
         }
-        return chosen;
+        return party;
     }
 }

@@ -1,9 +1,9 @@
 package valor;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
-import valor.data.ItemCatalog;
+import valor.Characters.GameData;
+import valor.Characters.Hero;
+import valor.Characters.Party;
 import valor.market.Market;
 import valor.ui.Console;
 import valor.ui.MarketMenu;
@@ -20,20 +20,23 @@ public class Main {
     public static void main(String[] args) {
         Console console = new Console();
         SetupMenu setup = new SetupMenu(console);
+        GameData data = new GameData();
 
         setup.greet();
 
-        // placeholder
-        List<String> heroNames = Arrays.asList("Hero A", "Hero B", "Hero C", "Hero D", "Hero E");
-        List<String> team = setup.chooseHeroes(heroNames);
-        System.out.println("\nYour team: " + String.join(", ", team) + "\n");
+        Party party = setup.chooseHeroes(data.getHeroes());
+        System.out.println("\nYour team:");
+        for (Hero hero : party.getHeroes()) {
+            System.out.println("  " + hero.statusLine(false));
+        }
+        System.out.println();
 
         World world = new World(GenerateWorld.generateWorld(new Random()));
         System.out.println(WorldView.render(world));
 
         // one market for the heroes' Nexus. the turn loop opens it with
         // marketMenu.open(hero, market) when a hero is standing on a hero Nexus tile
-        Market market = new Market(new ItemCatalog().getAllItems());
+        Market market = new Market(data.getAllItems());
         MarketMenu marketMenu = new MarketMenu(console);
     }
 }

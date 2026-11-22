@@ -23,6 +23,13 @@ public class DataFileReader {
         return rows;
     }
 
+    // reads one file, turns each row into an object, and adds it to the list
+    public static <T> void load(Path file, RecordParser<T> parser, List<T> destination) {
+        for (String[] row : readRows(file)) {
+            destination.add(parser.parse(row));
+        }
+    }
+
     private static List<String> readLines(Path file) {
         try {
             return Files.readAllLines(file);
