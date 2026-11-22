@@ -32,11 +32,16 @@ public class Main {
         System.out.println();
 
         World world = new World(GenerateWorld.generateWorld(new Random()));
+        world.spawnHeroes(party.getHeroes()); // one hero per lane, on the heroes' Nexus
         System.out.println(WorldView.render(world));
 
         // one market for the heroes' Nexus. the turn loop opens it with
         // marketMenu.open(hero, market) when a hero is standing on a hero Nexus tile
         Market market = new Market(data.getAllItems());
         MarketMenu marketMenu = new MarketMenu(console);
+    }
+
+    public void registerCommands(){
+        // TODO
     }
 }

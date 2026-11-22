@@ -1,17 +1,21 @@
 package valor.ui;
 
+import valor.Characters.Hero;
 import valor.world.Lane;
 import valor.world.Position;
 import valor.world.World;
 
-// draws the board as text, with row numbers down the left and lane names along the bottom:
-//     0   [N] [N] [X] [N] [N] [X] [N] [N]
-//     1   [P] [B] [X] [C] [P] [X] [O] [K]
+// draws the board as text, with row numbers down the left and lane names along the bottom.
+// every cell is 2 characters wide so a hero label like H1 fits:
+//     0   [N ] [N ] [X ] [N ] [N ] [X ] [N ] [N ]
+//     1   [P ] [B ] [X ] [C ] [P ] [X ] [O ] [K ]
 //     ...
-//           Top         Mid         Bot
+//     7   [H1] [N ] [X ] [H2] [N ] [X ] [H3] [N ]
+//            Top            Mid            Bot
 public class WorldView {
     private static final String ROW_PREFIX = "    0   "; // how much room a row number takes up
-    private static final int CELL_WIDTH = 4;             // "[N] "
+    private static final int CELL_WIDTH = 5;             // "[N ] "
+    private static final int CELL_INSIDE = 2;            // room between the brackets
 
     public static String render(World world) {
         StringBuilder map = new StringBuilder();
@@ -31,15 +35,25 @@ public class WorldView {
         return "    " + row + "   ";
     }
 
+    // a hero's label (H1) covers the tile symbol, otherwise the tile's terrain is shown
     private static String cell(World world, Position position) {
-        return "[" + world.tileAt(position).getSymbol() + "] ";
+        String text = String.valueOf(world.tileAt(position).getSymbol());
+        Hero hero = world.heroAt(position);
+        if (hero != null) {
+            text = hero.getLabel();
+        }
+        StringBuilder inside = new StringBuilder(text);
+        while (inside.length() < CELL_INSIDE) {
+            inside.append(' ');
+        }
+        return "[" + inside + "] ";
     }
 
     // puts each lane's name under the middle of its two columns
     private static String laneLabels() {
         StringBuilder labels = new StringBuilder();
         for (Lane lane : Lane.values()) {
-            int start = ROW_PREFIX.length() + lane.getLeftCol() * CELL_WIDTH + 2;
+            int start = ROW_PREFIX.length() + lane.getLeftCol() * CELL_WIDTH + 3;
             while (labels.length() < start) {
                 labels.append(' ');
             }

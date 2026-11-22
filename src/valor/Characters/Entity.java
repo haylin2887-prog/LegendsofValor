@@ -34,7 +34,7 @@ public abstract class Entity {
     public String getLabel() {
         return label;
     }
-    public void setLabel() {
+    public void setLabel(String label) {
         this.label = label;
     }
     public int getRow() {
