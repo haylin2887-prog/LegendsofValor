@@ -3,6 +3,9 @@ package valor.Characters;
 import java.util.ArrayList;
 
 import valor.Rules;
+import valor.item.Armor;
+import valor.item.Item;
+import valor.item.Weapon;
 
 public abstract class Hero extends Entity {
     
@@ -68,16 +71,29 @@ public Hero(String name, double mp, double str, double agi, double dex, int gold
         inventory.add(item);
     }
 
-    public void removeItem(Item item) {
-        inventory.remove(item);
-        /*if (item == weapon) {
+    // returns false if the hero doesn't have this item. an equipped item is unequipped first
+    public boolean removeItem(Item item) {
+        if (!inventory.remove(item)) {
+            return false;
+        }
+        if (item == weapon) {
             weapon = null;
+            bothHands = false;
         }
         if (item == armor) {
             armor = null;
-        } */
+        }
+        return true;
     }
 // ---------- equipment ----------
+    public Weapon getWeapon() {
+        return weapon;
+    }
+
+    public Armor getArmor() {
+        return armor;
+    }
+
 // ---------- fighting ----------
 
 

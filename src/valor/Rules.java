@@ -34,6 +34,9 @@ public class Rules {
     public static final int GOLD_PER_MONSTER_LEVEL = 100;
     public static final int WEAPON_USES = 10;
     public static final int ARMOR_USES = 10;
+    public static final int POTION_USES = 1;
+    public static final int SPELL_USES = 1;
+    public static final int SELL_DIVISOR = 2;   // items sell for half price, and repairs cost half price
 
     private static Random random = new Random();
 
