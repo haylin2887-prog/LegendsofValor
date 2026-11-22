@@ -14,4 +14,9 @@ public class NexusTile extends Tile {
     public Owner getOwner() {
         return owner;
     }
+
+    // heroes standing on their own Nexus can visit the market
+    public boolean isHeroNexus() {
+        return owner == Owner.HEROES;
+    }
 }

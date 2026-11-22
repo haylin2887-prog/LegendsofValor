@@ -66,4 +66,40 @@ Feifei Qin, Ivan Li
 5. UI
     - SetupMenu: welcomes the user and asks the user to select 3 heroes to form a team.
     - WorldView: renders the 8x8 grid along with the lane labels
+    - MarketMenu: shop for one hero standing on the heroes' Nexus
+        0) Leave  1) Buy  2) Sell  3) Repair  4) View inventory
+        every item list has a "0) Back" option
+
+### Item/
+
+1. Abstract Item Class
+    (String name, int price, int requiredLevel, Durability durability)
+    - describe(): one line of details for menus, subclasses add their own values
+    - abstract copy(): the market hands out copies so each hero's item wears out separately
+    Equipment (abstract) - Weapon, Armor
+        only equipment wears out and can be repaired
+        Weapon: damage, handsRequired
+        Armor: damageReduction
+    Potion - effectAmount, Set<PotionStat> (Mermaid_Tears and Ambrosia raise several stats)
+    Spell - damage, manaCost, SpellType {ICE, FIRE, LIGHTNING}
+        side effect on the monster will use the strategy pattern (battle)
+
+2. Durability
+    uses left before an item breaks. Weapons/Armor: 10 uses (Rules.WEAPON_USES / ARMOR_USES)
+    Potions/Spells: 1 use (Rules.POTION_USES / SPELL_USES)
+
+### Data/
+
+    - DataFileReader: reads a Data/*.txt file into rows, skipping the header line
+    - RecordParser<T>: one parser per item file (WeaponParser, ArmorParser, PotionParser, SpellParser)
+    - ItemCatalog: loads Weaponry, Armory, Potions, Fire/Ice/LightningSpells
+
+### Market/
+
+    - Market: lives on the heroes' Nexus (row 7). A hero on any hero Nexus tile can shop.
+    - unlimited catalog: buying gives the hero a copy, so nothing sells out
+    - buy: needs the required level and enough gold
+    - sell: half price (Rules.SELL_DIVISOR), unequips the item if it was equipped, item is discarded
+    - repair: broken weapons/armor only, costs half price
+    - returns messages instead of printing, so MarketMenu does all the output
     
