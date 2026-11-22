@@ -36,11 +36,8 @@ public class ItemCatalog {
         load(dataFolder, "LightningSpells.txt", new SpellParser(SpellType.LIGHTNING, Rules.SPELL_USES), spells);
     }
 
-    // reads one file, turns each row into an object, and adds it to the list
     private static <T> void load(Path folder, String fileName, RecordParser<T> parser, List<T> destination) {
-        for (String[] row : DataFileReader.readRows(folder.resolve(fileName))) {
-            destination.add(parser.parse(row));
-        }
+        DataFileReader.load(folder.resolve(fileName), parser, destination);
     }
 
     public List<Weapon> getWeapons() {
