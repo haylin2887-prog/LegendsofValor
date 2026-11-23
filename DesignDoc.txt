@@ -75,8 +75,12 @@ Feifei Qin, Ivan Li
 
 1. Abstract Entity Class
     (String name, int level) -> hp = level * Rules.HP_PER_LEVEL
-    - parent of Hero and Monster: name, level, hp, board label, row/col position
-    - takeDamage(), isFainted()
+    - parent of Hero and Monster: name, level, hp, label, row/col position
+    - label: the short name on the map (H1, H2, H3 for heroes, M1, M2, ... for monsters)
+      tag() -> "Gaerdal Ironhand (H1)", used in battle messages and menus
+    - setPosition(row, col) / getRow() / getCol(): World keeps these in step with its own
+      hero and monster maps, so a hero knows where it stands
+    - takeDamage() (hp never below 0), isFainted() (hp <= 0)
     - abstract dodgeChance(): heroes and monsters calculate it differently
     - tryDodge(): rolls dodgeChance(), capped at Rules.MAX_DODGE (50%)
 
@@ -84,29 +88,77 @@ Feifei Qin, Ivan Li
     (name, mp, strength, agility, dexterity, gold, xp, favorsStrength, favorsDexterity, favorsAgility)
     - every hero starts at level 1
     - favored skills start 10% higher (Rules.FAVORED_START_BONUS)
+    - maxHp() = level * Rules.HP_PER_LEVEL, maxMp starts at the mp read from the data file
     - inventory: ArrayList<Item>, plus the equipped weapon / armor (null if none)
     - gold: canAfford(), spend(), earn()
     - removeItem(): returns false if the hero doesn't have it, unequips the item if it was equipped
-    - dodgeChance() = agility * Rules.HERO_DODGE_FACTOR
-    - statusLine(inBattle): one line of text for menus
+    - getItems(Class): all items of one kind, e.g. getItems(Spell.class)
+ 
+    Terrain boost (Legends of Valor)
+    - applyTerrainBonus(PotionStat) / clearTerrainBonus(): World calls these in placeHero(),
+      so the boost starts when the hero steps on a Bush / Cave / Koulou tile and ends when it leaves
+    - getStrength() / getDexterity() / getAgility() return the base value * (1 + Rules.TERRAIN_BONUS)
+      for the boosted stat only. The base value is never changed, so nothing has to be "given back"
+    - dodgeChance() = getAgility() * Rules.HERO_DODGE_FACTOR
+ 
+    Equipment and items
+    - equipWeapon(weapon, bothHands): a two-handed weapon is always held with both hands,
+      a one-handed weapon can be held with both for +50% weapon damage (Rules.TWO_HAND_BONUS)
+    - equipArmor(armor)
+    - usePotion(potion): raises every stat the potion lists, the potion is used up and removed.
+      returns a message instead of printing. DEFENSE does nothing because heroes have no defense
+    
+    Fighting
+    - attackDamage() = (getStrength() + weapon damage) * Rules.ATTACK_FACTOR
+      a broken weapon counts as no weapon until it is repaired
+    - weaponUsed(): called by Combat after an attack that hit, the weapon loses one use
+    - spellDamage(spell) = spell damage * (1 + getDexterity() / 10000) * Rules.SPELL_SCALE
+    - spendMana(cost): returns false and changes nothing if the hero has not enough mana
+    - receiveDamage(damage): working armor lowers the damage by damageReduction * Rules.ARMOR_FACTOR
+      (never below 0) and loses one use. returns the damage the hero really took
+ 
+    Rounds, fainting and levels
+    - regenerate(): end of every round, a living hero regains 10% of max HP and max MP
+      (Rules.REGEN_PCT), never above the max
+    - respawn(): a fainted hero comes back on its Nexus with full HP and MP and no terrain boost
+    - gainExperience(amount): returns true if the hero levelled up. a hero levels up when
+      xp >= level * Rules.XP_PER_LEVEL
+    - level up: every skill grows 5%, favored skills 5% more, max MP and MP grow 10%,
+      HP is refilled (a fainted hero is not revived by a level up, it respawns instead)
+    - statusLine(inBattle): one line of text for menus. in battle it shows HP/MP, the terrain boost
+      and the equipment, outside battle it also shows XP, gold and the three skills.
+      toString() = statusLine(true), so a Hero can be shown in a menu directly
     Hero types are nested static classes inside Hero.java, each favors two skills:
         Hero.Warrior  - strength, agility
         Hero.Sorcerer - dexterity, agility
         Hero.Paladin  - strength, dexterity
+  
 
 3. Abstract Monster Class extends Entity
     (name, level, baseDamage, defense, dodge)
+    - getKind(): "Dragon", "Exoskeleton" or "Spirit"
     - attackDamage() = baseDamage * Rules.MONSTER_DAMAGE_FACTOR
     - dodgeChance() = dodge * Rules.MONSTER_DODGE_FACTOR
     - afterDefense(damage): damage left after the monster's defense
-    - reduceDamage / reduceDefense / reduceDodge(percent): used by spell effects
-    - statusLine(): one line of text for menus
+      = damage - defense * Rules.DEFENSE_FACTOR, never below 0
+    - copyAtLevel(newLevel): a new monster of the same kind and stats at another level.
+      damage and defense grow with the level, dodge stays the same so it can never pass 100%.
+      GameData.createMonster() uses it so a new wave matches the highest hero level
+    - applyTerrainBonus(PotionStat): hard difficulty only. Game calls it every time a monster moves
+      (null removes it). Koulou (STRENGTH) = +10% attack damage, Cave (AGILITY) = +10% dodge,
+      Bush (DEXTERITY) = +10% defense. attackDamage(), dodgeChance() and afterDefense() multiply
+      by (1 + Rules.TERRAIN_BONUS) for the boosted stat only. On easy and medium it stays null
+    - reduceDamage / reduceDefense / reduceDodge(percent): used by the spell effects (Strategy,
+      see Battle/). The reduction stays on that monster for the rest of the game
+    - statusLine(): one line of text for menus: label, kind, level, HP, damage, defense, dodge.
+      toString() = statusLine()
+    
     Monster types are nested static classes inside Monster.java, each is 10% stronger
     in one stat (Rules.MONSTER_FAVORED_BONUS):
         Monster.Dragon      - base damage
         Monster.Exoskeleton - defense
         Monster.Spirit      - dodge
-
+ 
 4. Party
     the player's team of 3 heroes (one per lane)
     - addHero(), getHeroes(), size()
@@ -156,4 +208,133 @@ Feifei Qin, Ivan Li
     - sell: half price (Rules.SELL_DIVISOR), unequips the item if it was equipped, item is discarded
     - repair: broken weapons/armor only, costs half price
     - returns messages instead of printing, so MarketMenu does all the output
-    
+### Battle/
+ 
+1. Combat
+    resolves ONE attack or ONE spell. It knows nothing about the board: World checks range and
+    movement first (world.monstersInRange / heroesInRange), then Game calls Combat.
+    Combat(Party party, World world): the world is only used to take a dead monster off the grid.
+    - heroAttack(hero, target)
+        1. target.tryDodge() -> "dodged" event, nothing else happens
+        2. damage = target.afterDefense(hero.attackDamage()); target.takeDamage(damage)
+        3. hero.weaponUsed(), then checkDefeated(target)
+    - heroCast(hero, spell, target): returns false (turn NOT used) if the hero has not enough mana
+        1. hero.spendMana(), spell.use() and hero.removeItem(spell): a spell is cast only once
+        2. dodge -> the spell is lost but the turn is used
+        3. damage = target.afterDefense(hero.spellDamage(spell)); target.takeDamage(damage)
+        4. spell.applyEffect(target): the Strategy side effect (see below)
+        5. checkDefeated(target)
+    - monsterAttack(monster, target)
+        1. target.tryDodge() -> "dodged" event
+        2. damage = target.receiveDamage(monster.attackDamage()) (armor lowers it)
+        3. if the hero fainted: clear its terrain boost and notify. The hero is off the board
+           (World ignores fainted heroes) until Game.respawnHeroes() brings it back
+    - checkDefeated(monster): world.removeMonster(), then EVERY hero (also a fainted one) earns
+      Rules.GOLD_PER_MONSTER_LEVEL (500) * monster level gold and Rules.XP_PER_MONSTER_LEVEL (2)
+      * monster level experience, and may level up
+    - addObserver(observer) and one notifyXxx method per event (see Observer below)
+ 
+2. Observer pattern: BattleObserver
+    Combat is the subject. It does not print or count anything itself, it only tells its observers.
+    Events: roundStarted(round), roundEnded(), monsterSpawned(monster), heroAttacked(...),
+    spellCast(...), attackDodged(defenderName, attackName), monsterAttacked(...), monsterDefeated(...),
+    heroFainted(hero), heroRespawned(hero), heroRewarded(hero, xp, gold, leveledUp),
+    heroesWon(hero), monstersWon(monster)
+    - the notifyXxx methods that only Combat uses are private (dodged, attacked, cast, defeated,
+      rewarded, monster attacked, hero fainted). The ones Game reports are public:
+      notifyRoundStarted, notifyRoundEnded, notifyHeroRespawned, notifyMonsterSpawned,
+      notifyHeroesWon, notifyMonstersWon
+    - each notifyXxx is a plain loop: for (BattleObserver observer : observers) observer.xxx(...)
+ 
+3. Adapter pattern: BattleObserverAdapter
+    the interface has 13 methods but most observers only care about a few.
+    The adapter implements all of them with empty bodies, a subclass overrides only what it needs.
+ 
+4. The two observers (both extend BattleObserverAdapter)
+    - BattleLogger: prints what happened ("who did what") for the player
+    - BattleStats: only counts rounds, spawned / defeated monsters, hero faints, dodges,
+      damage dealt and damage taken. summary() is printed when the game ends
+    - Game registers both with combat.addObserver(...). Adding a third observer (e.g. a log file)
+      needs no change in Combat
+ 
+5. Strategy pattern: SpellEffect (in Item/)
+    the side effect a spell has on the monster it hits. Spell does not care which effect it has,
+    it asks the strategy to apply itself: spell.applyEffect(target) -> effect.apply(target)
+    - IceEffect:       target.reduceDamage(Rules.SPELL_EFFECT)  (10%)
+    - FireEffect:      target.reduceDefense(Rules.SPELL_EFFECT)
+    - LightningEffect: target.reduceDodge(Rules.SPELL_EFFECT)
+    - SpellEffect.forType(SpellType) picks the strategy when the Spell is created
+    - apply() returns a message, which Combat passes to the observers in spellCast(...)
+ 
+### Game/
+ 
+1. Main
+    setup, then hand over to Game:
+    Console -> SetupMenu.chooseHeroes() builds the Party -> GenerateWorld builds the grid ->
+    World.spawnHeroes() puts hero i on the left tile of lane i on the heroes' Nexus and labels
+    them H1, H2, H3 -> Market + MarketMenu -> new Game(...).run()
+ 
+2. Game (the game loop)
+    owns Console, GameData, Party, World, Market, MarketMenu, HeroMenu, Combat and BattleStats.
+    The rules of movement and range stay in World, the rules of fighting stay in Combat,
+    Game only decides what happens next and talks to the player.
+    - run():
+        chooseDifficulty(), spawn the first monsters, then repeat until gameOver:
+        round++ -> notifyRoundStarted -> respawnHeroes() -> heroesPhase() -> monstersPhase()
+        -> endRound(). After heroesPhase and monstersPhase the loop checks gameOver again,
+        so the game stops at the exact moment somebody reaches the enemy Nexus.
+        At the end: stats.summary()
+    - chooseDifficulty(): Easy = new monsters every 8 rounds (Rules.SPAWN_EASY), Medium = every 6,
+      Hard = every 4 and hardMode = true (monsters get the terrain bonus)
+    - respawnHeroes() (start of a round): a fainted hero comes back through
+      world.respawnSpot(hero) (its home Nexus tile, or the other Nexus tile of the lane).
+      If both are taken it waits another round. Then hero.respawn() and world.placeHero()
+    - endRound(): every hero regenerate(), notifyRoundEnded, and every spawnInterval rounds
+      every lane is marked "waiting for a monster"
+    - spawnWaiting(): for each lane that is waiting and whose spawn tile (right tile of the
+      monsters' Nexus) is free: data.createMonster(party.highestLevel()), label M1, M2, ...
+      (nextMonsterId only goes up), world.placeMonster(), notifyMonsterSpawned.
+      A blocked lane keeps waiting until its tile is free, so no monster is lost
+    - "gameOver" becomes true in checkHeroesWon() (after a move) or in moveMonster()
+ 
+3. Heroes' turn: heroesPhase() / takeTurn(hero)
+    every living hero takes ONE action that uses the turn. Fainted heroes are skipped.
+    takeTurn() draws the board and every hero's statusLine with its position, then asks for
+    commands until the turn is used up.
+    Command pattern: the menu is a LinkedHashMap<String, Command>, so adding an action means
+    adding one entry. Command = label + "free" flag + Action (run(hero) returns true if the turn
+    was used)
+        1 Move            W/A/S/D, world.checkHeroMove() gives the reason if it is illegal
+        2 Attack          only monsters in range (own tile + 8 tiles around), one target
+        3 Cast spell      needs a spell, a monster in range and enough mana, then Combat.heroCast
+        4 Use potion      HeroMenu.usePotion
+        5 Equip           HeroMenu.equip (weapon / armor, asks one or both hands)
+        6 Teleport        next to a living hero in ANOTHER lane, world.teleportOptions()
+                          (beside or behind the target, never ahead, never on a hero,
+                          never behind a monster)
+        7 Recall          back to the hero's own spawn Nexus tile, world.checkRecall()
+        8 Remove obstacle an adjacent Obstacle becomes a Plain tile
+        9 Pass turn
+        i Info / b Show board / m Market    FREE commands, they do not use the turn.
+                          m only works on a heroes' Nexus tile (buy and sell do not use the turn)
+    - an action that fails (illegal move, no target, not enough mana, cancelled menu) returns false
+      and the hero chooses again, so a mistake never wastes the turn
+    - after a move or a teleport onto the monsters' Nexus: checkHeroesWon() -> notifyHeroesWon
+ 
+4. Monsters' turn: monstersPhase()
+    - the monsters closest to the heroes' Nexus (biggest row) act first, so a lane never jams.
+      They are sorted with a small insertion sort (sortByRowDescending)
+    - a monster with a living hero in range attacks one of them, chosen at random
+      (Combat.monsterAttack). Otherwise it moves (below)
+    - moveMonster(): one step south if world.monsterCanEnter(south). If south is blocked it steps
+      sideways inside its own lane, but only onto a tile that has an open tile south of it.
+      If nothing works it stays this turn
+    - monsters follow the same rule as heroes: they cannot move behind a hero without killing it
+      (monsterCanEnter), so a hero can block a lane
+    - on hard difficulty monster.applyTerrainBonus(tile.getBonusStat()) after every move
+    - a monster on the heroes' Nexus: gameOver and notifyMonstersWon
+ 
+5. Rules.java 
+    HEROES = 3, TERRAIN_BONUS = 10%, SPAWN_EASY / MEDIUM / HARD = 8 / 6 / 4,
+    REGEN_PCT = 10%, XP_PER_MONSTER_LEVEL = 2, GOLD_PER_MONSTER_LEVEL = 500, MAX_DODGE = 50%,
+    SPELL_EFFECT = 10%.
