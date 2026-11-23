@@ -1,4 +1,5 @@
 package valor.world;
+import valor.item.PotionStat;
 
 // a Tile is one square on the board. it only knows its terrain, not who is standing on it
 public abstract class Tile {
@@ -30,6 +31,13 @@ public abstract class Tile {
         return accessible;
     }
 
+    // the stat this tile boosts while someone stands on it (null = none).
+    // Bush, Cave and Koulou override this
+    public PotionStat getBonusStat() {
+        return null;
+    }
+
+    
     // true if a hero can clear this tile (only obstacles)
     public boolean isRemovable() {
         return false;

@@ -2,7 +2,6 @@ package valor.ui;
 
 import java.util.List;
 import java.util.Scanner;
-import java.util.function.Function;
 
 // all keyboard input goes through here, so every prompt handles bad input and Q the same way
 public class Console {
@@ -42,11 +41,11 @@ public class Console {
     }
 
     // shows a numbered list and returns the option the player picks.
-    // label turns each option into the text shown for it
-    public <T> T choose(String title, List<T> options, Function<T, String> label) {
+    // labels.get(i) is the text shown for options.get(i), so both lists must have the same size
+    public <T> T choose(String title, List<T> options, List<String> labels) {
         System.out.println(title);
         for (int i = 0; i < options.size(); i++) {
-            System.out.println("  " + (i + 1) + ") " + label.apply(options.get(i)));
+            System.out.println("  " + (i + 1) + ") " + labels.get(i));
         }
         int choice = readNumber("> ", 1, options.size());
         return options.get(choice - 1);
