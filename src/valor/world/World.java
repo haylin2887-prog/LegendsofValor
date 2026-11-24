@@ -100,6 +100,17 @@ public class World {
         return null;
     }
 
+    // every hero standing here, in spawn order (empty if there is none)
+    public List<Hero> heroesAt(Position position) {
+        List<Hero> found = new ArrayList<>();
+        for (Map.Entry<Hero, Position> entry : heroPositions.entrySet()) {
+            if (entry.getValue().sameAs(position)) {
+                found.add(entry.getKey());
+            }
+        }
+        return found;
+    }
+
     // ---------- monsters ----------
     public void placeMonster(Monster monster, Position position) {
         monsterPositions.put(monster, position);
@@ -124,6 +135,17 @@ public class World {
             }
         }
         return null;
+    }
+
+    // every monster standing here, in spawn order (empty if there is none)
+    public List<Monster> monstersAt(Position position) {
+        List<Monster> found = new ArrayList<>();
+        for (Map.Entry<Monster, Position> entry : monsterPositions.entrySet()) {
+            if (entry.getValue().sameAs(position)) {
+                found.add(entry.getKey());
+            }
+        }
+        return found;
     }
 
     public List<Monster> getMonsters() {
