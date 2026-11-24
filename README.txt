@@ -4,8 +4,8 @@ Feifei Qin, Ivan Li
 
 1. FILES
 --------
-Design Document.txt            design choices, patterns, and evaluation
-DesignDoc.txt                  detailed design notes
+Design Document.txt            Design patterns and choices + Eval
+UML diagram.pdf                UML diagram for OO design
 Legends of Valor.pdf           project spec for reference
 
 src/valor/
