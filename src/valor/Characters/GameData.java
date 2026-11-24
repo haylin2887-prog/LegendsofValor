@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import valor.Rules;
 import valor.data.DataFileReader;
 import valor.data.HeroParser;
 import valor.data.ItemCatalog;
@@ -48,6 +49,12 @@ public class GameData {
 
     public List<Monster> getMonsters() {
         return Collections.unmodifiableList(monsters);
+    }
+
+    // a random monster at the given level (a new wave uses the highest hero level)
+    public Monster createMonster(int level) {
+        Monster template = monsters.get(Rules.randomInt(monsters.size()));
+        return template.copyAtLevel(level);
     }
 
     public ItemCatalog getItemCatalog() {

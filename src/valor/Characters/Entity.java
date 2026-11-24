@@ -37,16 +37,21 @@ public abstract class Entity {
     public void setLabel(String label) {
         this.label = label;
     }
+
+    // "Gaerdal Ironhand (H1)"
+    public String tag() {
+        if (label.isEmpty()) {
+            return name;
+        }
+        return name + " (" + label + ")";
+    }
     public int getRow() {
         return row;
     }
     public int getCol() {
         return col;
     }
-    /* public int getLane() {
-        return Rules.laneOf(col);
-    }*/
-    
+
     public void setPosition(int row, int col) {
         this.row = row;
         this.col = col;

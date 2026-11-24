@@ -38,9 +38,13 @@ public class SetupMenu {
         List<Hero> available = new ArrayList<>(allHeroes);
         Party party = new Party();
         while (party.size() < TEAM_SIZE) {
+            List<String> labels = new ArrayList<>();
+            for (Hero candidate : available) {
+                labels.add(candidate.toString());
+            }
             Hero hero = console.choose(
                     "\nChoose hero " + (party.size() + 1) + " of " + TEAM_SIZE + ":",
-                    available, Hero::toString);
+                    available, labels);
             available.remove(hero); // a hero can only be picked once
             party.addHero(hero);
             System.out.println(hero.getName() + " joins your team!");

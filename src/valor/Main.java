@@ -39,9 +39,7 @@ public class Main {
         // marketMenu.open(hero, market) when a hero is standing on a hero Nexus tile
         Market market = new Market(data.getAllItems());
         MarketMenu marketMenu = new MarketMenu(console);
+        new Game(console, data, party, world, market, marketMenu).run();
     }
 
-    public void registerCommands(){
-        // TODO
-    }
 }

@@ -22,6 +22,16 @@ public enum Lane {
         return rightCol;
     }
 
+    // the lane a column belongs to, or null for the wall columns
+    public static Lane of(int col) {
+        for (Lane lane : values()) {
+            if (lane.contains(col)) {
+                return lane;
+            }
+        }
+        return null;
+    }
+
     public boolean contains(int col) {
         return col == leftCol || col == rightCol;
     }

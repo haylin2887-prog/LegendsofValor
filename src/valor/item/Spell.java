@@ -1,10 +1,14 @@
 package valor.item;
 
+import valor.Characters.Monster;
+
 // A single-use magic attack. The extra effect (ice, fire, lightning) depends on its SpellType.
 public class Spell extends Item {
     private final int damage;
     private final int manaCost;
     private final SpellType spellType;
+    // strategy: what the spell does to the monster besides damage
+    private final SpellEffect effect; 
 
     public Spell(String name, int price, int requiredLevel,
                  int damage, int manaCost, SpellType spellType, Durability durability) {
@@ -12,6 +16,7 @@ public class Spell extends Item {
         this.damage = damage;
         this.manaCost = manaCost;
         this.spellType = spellType;
+        this.effect = SpellEffect.forType(spellType);
     }
 
     public int getDamage() {
@@ -36,38 +41,10 @@ public class Spell extends Item {
         return new Spell(getName(), getPrice(), getRequiredLevel(), damage, manaCost, spellType, copyDurability());
     }
 
-    // TODO (battle): strategy pattern for the side effect.
-    // The spell does not care which effect it has; it just asks the strategy.
-    /* class IceEffect implements SpellEffect {
-        public String apply(Monster target) {
-            target.reduceDamage(Rules.SPELL_EFFECT);
-            return target.getName() + "'s damage was reduced!";
-        }
-
-        public String getName() {
-            return "Ice";
-        }
+    public String applyEffect(Monster target) {
+        
+        return effect.apply(target);
     }
 
-    class LightningEffect implements SpellEffect {
-        public String apply(Monster target) {
-            target.reduceDodge(Rules.SPELL_EFFECT);
-            return target.getName() + "'s dodge chance was reduced!";
-        }
 
-        public String getName() {
-            return "Lightning";
-        }
-    }
-
-    class FireEffect implements SpellEffect {
-        public String apply(Monster target) {
-            target.reduceDefense(Rules.SPELL_EFFECT);
-            return target.getName() + "'s defense was reduced!";
-        }
-
-        public String getName() {
-            return "Fire";
-        }
-    } */
 }
