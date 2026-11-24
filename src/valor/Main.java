@@ -14,7 +14,7 @@ import valor.world.World;
 
 
 // run from LegendsofValor folder
-// javac -d out src/valor/*.java src/valor/world/*.java src/valor/ui/*.java src/valor/Characters/*.java src/valor/item/*.java src/valor/data/*.java src/valor/market/*.java
+// javac -d out src/valor/*.java src/valor/world/*.java src/valor/ui/*.java src/valor/Characters/*.java src/valor/item/*.java src/valor/data/*.java src/valor/market/*.java src/valor/battle/*.java
 // java -cp out valor.Main
 public class Main {
     public static void main(String[] args) {

@@ -1,0 +1,104 @@
+legends of valor design documentation
+Feifei Qin, Ivan Li
+
+
+1. OVERVIEW
+-----------
+The game is split into packages that each have one job:
+
+  world        the board: tiles, lanes, positions, movement rules
+  Characters   heroes, monsters, the party
+  item         weapons, armor, potions, spells
+  battle       resolving attacks and spells, reporting what happened
+  market       buying, selling, repairing
+  data         turning the text files into objects
+  ui           menus and board drawing
+
+
+2. INHERITANCE
+--------------
+Entity -> Hero -> Warrior, Sorcerer, Paladin
+Entity -> Monster -> Dragon, Exoskeleton, Spirit
+  Heroes and monsters share a name, level, HP, taking damage, and dodging.
+  dodgeChance() is abstract because each side calculates it differently, while tryDodge()
+  applies the same cap to both.
+
+Item -> Equipment -> Weapon, Armor
+Item -> Potion, Spell
+  All items share price, required level, and uses, so the market can treat
+  them the same. Equipment is a separate level because only weapons and armor
+  can be repaired. Market.repair() takes an Equipment, so the compiler rejects
+  repairing a potion, only the selling of more potions.
+
+Tile -> Nexus, Plain, Bush, Cave, Koulou, Obstacle, Inaccessible
+  Tile is abstract because every tile shares a row, column, symbol, and
+  accessibility. The world asks the tile questions (isAccessible, isRemovable)
+  instead of checking its type. Each type of tile then has its own attributes and effects
+  that should be applied to the heroes and monsters who enter it.
+
+
+3. INTERFACES
+-------------
+SpellEffect      what a spell does besides damage
+BattleObserver   anything that wants to hear about game events
+RecordParser<T>  turns one row of a data file into an object of type T
+HeroFactory, MonsterFactory
+                 decide which subclass a row becomes
+Action           one thing a hero can do.
+
+These are interfaces because the implementations share no fields, and only effect behavior.
+
+
+
+4. DESIGN PATTERNS
+------------------
+Strategy (SpellEffect: IceEffect, FireEffect, LightningEffect)
+  Why: the three spell types share the same cost, damage, and mana code, and
+  differ only in their side effect. Ice lowers the monster's damage, Fire
+  lowers its defense, and Lightning lowers its dodge chance.
+  How: each Spell holds a SpellEffect. When a spell hits, Combat calls
+  spell.applyEffect(target), and the Spell passes the call to its effect
+  without knowing which one it has. The alternatives were a Spell subclass
+  per type, or a switch inside Spell.
+
+Observer (BattleObserver: BattleLogger, BattleStats)
+  Why: Combat itself shouldn't print or count what is happening. It only
+  resolves attacks and announces the result to its observers.
+  How: Game registers the observers with combat.addObserver(). When a hero
+  lands an attack, Combat calls heroAttacked() on every observer.
+  BattleLogger prints the attack for the player right away, while BattleStats
+  silently adds to its totals, which Game prints as a summary at the end.
+  Combat only knows the interface, so a new observer needs no change to Combat.
+
+Adapter (BattleObserverAdapter)
+  Why: BattleObserver has 13 methods, one per event, but BattleStats only
+  cares about 8 of them. Without the adapter, it would need empty methods
+  for the rest.
+  How: BattleObserverAdapter is an abstract class that implements every
+  method with an empty body. BattleLogger and BattleStats extend it and
+  override only the events they need. We kept the interface too, so an
+  observer is not forced to extend a class.
+
+Factory (HeroFactory, MonsterFactory, SpellEffect.forType)
+  Why: Warriors.txt, Sorcerers.txt, and Paladins.txt have the same columns
+  and only differ in which class a row becomes. The same is true for the
+  three monster files.
+  How: GameData gives the parser a constructor, such as
+  new HeroParser(Hero.Warrior::new). The parser reads the row and calls
+  factory.create(), so one HeroParser handles all three files without knowing
+  the subclass. SpellEffect.forType() is a simple factory method that
+  picks the effect matching a spell's type.
+
+
+
+5. EVALUATION
+-------------
+Overall, we think we did well in implementing various design patterns
+that fit the game in ways that were appriopriate. The observer pattern especially
+made a lot of sense because else, we could see a non-observer implementation taking
+the form of many if statements depending on what the results of an instance of
+a hero and monster combat.
+
+Something we noticed that could be improved upon is finding a way to decrease
+the amount of responsibilities the Game.java class owned. It is by far our largest class,
+and we think many of the methods in Game.java could've been placed in a separate class.

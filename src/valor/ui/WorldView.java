@@ -22,13 +22,13 @@ public class WorldView {
         int inside = insideWidth(world);
         StringBuilder map = new StringBuilder();
         for (int row = 0; row < world.size(); row++) {
-            StringBuilder monsters = new StringBuilder(" ".repeat(ROW_PREFIX.length()));
+            StringBuilder monsters = new StringBuilder(repeat(" ", ROW_PREFIX.length()));
             StringBuilder terrain = new StringBuilder(rowPrefix(row));
-            StringBuilder heroes = new StringBuilder(" ".repeat(ROW_PREFIX.length()));
+            StringBuilder heroes = new StringBuilder(repeat(" ", ROW_PREFIX.length()));
             for (int col = 0; col < world.size(); col++) {
                 Position position = new Position(row, col);
                 if (Lane.isWall(col)) {
-                    String wall = cell("X".repeat(inside), inside);
+                    String wall = cell(repeat("X", inside), inside);
                     monsters.append(wall);
                     terrain.append(wall);
                     heroes.append(wall);
@@ -82,12 +82,21 @@ public class WorldView {
         String symbol = " " + world.tileAt(position).getSymbol() + " ";
         int left = (inside - symbol.length()) / 2;
         int right = inside - symbol.length() - left;
-        return "-".repeat(left) + symbol + "-".repeat(right);
+        return repeat("-", left) + symbol + repeat("-", right);
     }
 
     // one line of a cell, padded to the cell's width
     private static String cell(String text, int inside) {
-        return "[" + text + " ".repeat(inside - text.length()) + "] ";
+        return "[" + text + repeat(" ", inside - text.length()) + "] ";
+    }
+
+    // text repeated count times (String.repeat needs Java 11, this works in Java 8)
+    private static String repeat(String text, int count) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            result.append(text);
+        }
+        return result.toString();
     }
 
     // puts each lane's name under the middle of its two columns

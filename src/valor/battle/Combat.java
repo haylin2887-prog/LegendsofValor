@@ -1,10 +1,11 @@
 package valor.battle;
 
 import java.util.ArrayList;
-import valor.Rules;
+import java.util.List;
 import valor.Characters.Hero;
 import valor.Characters.Monster;
 import valor.Characters.Party;
+import valor.Rules;
 import valor.item.Spell;
 import valor.world.World;
 
@@ -14,7 +15,7 @@ import valor.world.World;
 public class Combat {
     private final Party party;
     private final World world;
-    private final ArrayList<BattleObserver> observers = new ArrayList<BattleObserver>();
+    private final List<BattleObserver> observers = new ArrayList<>();
 
     public Combat(Party party, World world) {
         this.party = party;
