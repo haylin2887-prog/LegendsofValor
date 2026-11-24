@@ -69,7 +69,7 @@ public class BattleLogger extends BattleObserverAdapter {
     @Override
     public void heroesWon(Hero hero) {
         System.out.println("\n*****************************************************");
-        System.out.println("*  VICTORY! " + hero.tag() + " reached the Monsters' Nexus!");
+        System.out.println("*  HEROES VICTORY! " + hero.tag() + " reached the Monsters' Nexus!");
         System.out.println("*****************************************************");
     }
 

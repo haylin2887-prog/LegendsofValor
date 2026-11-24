@@ -334,7 +334,3 @@ Feifei Qin, Ivan Li
     - on hard difficulty monster.applyTerrainBonus(tile.getBonusStat()) after every move
     - a monster on the heroes' Nexus: gameOver and notifyMonstersWon
  
-5. Rules.java 
-    HEROES = 3, TERRAIN_BONUS = 10%, SPAWN_EASY / MEDIUM / HARD = 8 / 6 / 4,
-    REGEN_PCT = 10%, XP_PER_MONSTER_LEVEL = 2, GOLD_PER_MONSTER_LEVEL = 500, MAX_DODGE = 50%,
-    SPELL_EFFECT = 10%.

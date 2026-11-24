@@ -17,16 +17,16 @@ public class Rules {
     public static final double MP_LEVEL_UP = 1.1;
     public static final double REGEN_PCT = 0.10;            // end of round: +10% of max HP and max MP
 
-    public static final double ATTACK_FACTOR = 0.05;
+    public static final double ATTACK_FACTOR = 0.2;
     public static final double TWO_HAND_BONUS = 1.5;
-    public static final double HERO_DODGE_FACTOR = 0.002;
-    public static final double MONSTER_DODGE_FACTOR = 0.01;
+    public static final double HERO_DODGE_FACTOR = 0.005;
+    public static final double MONSTER_DODGE_FACTOR = 0.03;
     public static final double MAX_DODGE = 0.5;
     public static final double DEFENSE_FACTOR = 0.05;
     public static final double ARMOR_FACTOR = 0.05;
     public static final double SPELL_SCALE = 0.1;
     public static final double SPELL_EFFECT = 0.1;
-    public static final double MONSTER_DAMAGE_FACTOR = 0.2;
+    public static final double MONSTER_DAMAGE_FACTOR = 0.05;
     public static final double MONSTER_FAVORED_BONUS = 1.1;
 
     public static final int XP_PER_MONSTER_LEVEL = 2;
