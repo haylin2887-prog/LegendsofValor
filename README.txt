@@ -6,7 +6,7 @@ Feifei Qin, Ivan Li
 --------
 Design Document.txt            design choices, patterns, and evaluation
 DesignDoc.txt                  detailed design notes
-Legends of Valor.pdf           assignment description
+Legends of Valor.pdf           project spec for reference
 
 src/valor/
   Main.java                    starts the game: loads data, picks heroes, builds the world

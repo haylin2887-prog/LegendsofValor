@@ -1,5 +1,6 @@
 legends of valor design documentation
-Feifei Qin, Ivan Li
+Feifei Qin
+Ivan Li (ivanli@bu.edu) U01883433
 
 
 1. OVERVIEW
